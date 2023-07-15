@@ -54,7 +54,7 @@ namespace TempleRun
                 currentTileLocation += Vector3.Scale(prevTile.GetComponent<Renderer>().bounds.size, currentTileDirection);
 
         }
-
+        //Add New Direction
         public void AddNewDirection(Vector3 direction)
         {
             currentTileDirection = direction;
