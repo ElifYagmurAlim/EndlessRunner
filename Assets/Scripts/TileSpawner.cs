@@ -41,6 +41,7 @@ namespace TempleRun
 
         }
 
+        //Spawns Tiles
         private void SpawnTile(Tile tile, bool spawnObstacle = false)
         {
             Quaternion newTileRotation = tile.gameObject.transform.rotation * Quaternion.LookRotation(currentTileDirection, Vector3.up);
