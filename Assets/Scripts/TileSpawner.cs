@@ -105,14 +105,14 @@ namespace TempleRun
 
         private void SpawnObstacle()
         {
-            if (Random.value > 0.2f) return;
-
-            GameObject obstaclePrefab = SelectRandomGameObjectFromList(obstacles);
-
-            Quaternion newObjectRotation = obstaclePrefab.gameObject.transform.rotation * Quaternion.LookRotation(currentTileDirection, Vector3.up);
-
-            GameObject obstacle = Instantiate(obstaclePrefab, currentTileLocation, newObjectRotation);
-            currentObstacles.Add(obstacle);
+        //    if (Random.value > 0.2f) return;
+        //
+        //    GameObject obstaclePrefab = SelectRandomGameObjectFromList(obstacles);
+        //
+        //    Quaternion newObjectRotation = obstaclePrefab.gameObject.transform.rotation * Quaternion.LookRotation(currentTileDirection, Vector3.up);
+        //
+        //    GameObject obstacle = Instantiate(obstaclePrefab, currentTileLocation, newObjectRotation);
+        //    currentObstacles.Add(obstacle);
         }
 
         private GameObject SelectRandomGameObjectFromList(List<GameObject> list)
