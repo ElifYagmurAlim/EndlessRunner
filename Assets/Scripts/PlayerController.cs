@@ -2,6 +2,7 @@ using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.Events;
+using System.Collections;
 
 namespace TempleRun.Playyer {
 
@@ -22,8 +23,17 @@ namespace TempleRun.Playyer {
         private LayerMask groundLayer;
         [SerializeField]
         private LayerMask turnLayer;
-
+        [SerializeField] 
+        private LayerMask obstackleLayer;
+        [SerializeField]
+        private Animator animator;
+        [SerializeField]
+        private AnimationClip  slideAnimationClip;
+        [SerializeField]
         private float playerSpeed;
+        [SerializeField]
+        private float scoreMultiplier = 10f;
+
         private float gravity;
         private Vector3 movementDirection = Vector3.forward;
         private Vector3 playerVelocity;
@@ -36,14 +46,26 @@ namespace TempleRun.Playyer {
 
         private CharacterController controller;
 
+        private int slidingAnimationId;
+
+        private bool sliding = false;
+        private float score = 0;
+
         [SerializeField]
         private UnityEvent<Vector3> turnEvent;
+        [SerializeField]
+        private UnityEvent<int> gameOverEvent;
+        [SerializeField]
+        private UnityEvent<int> scoreUpdateEvent;
 
         private void Awake()
         {
             playerInput = GetComponent<PlayerInput>();
             controller = GetComponent<CharacterController>();
-            turnAction = playerInput.actions["Turn"];
+
+            slidingAnimationId = Animator.StringToHash("Sliding");
+
+           // turnAction = playerInput.actions["Turn"];
             jumpAction = playerInput.actions["Jump"];
             slideAction = playerInput.actions["Slide"];
 
@@ -51,7 +73,7 @@ namespace TempleRun.Playyer {
 
         private void OnEnable()
         {
-            turnAction.performed += PlayerTurn;
+           // turnAction.performed += PlayerTurn;
             slideAction.performed += PlayerSlide;
             jumpAction.performed += PlayerJump;
 
@@ -59,7 +81,7 @@ namespace TempleRun.Playyer {
 
         private void OnDisable()
         {
-            turnAction.performed -= PlayerTurn;
+           // turnAction.performed -= PlayerTurn;
             slideAction.performed -= PlayerSlide;
             jumpAction.performed -= PlayerJump;
 
@@ -71,17 +93,18 @@ namespace TempleRun.Playyer {
             gravity = initialGravityValue;
         }
 
-        private void PlayerTurn(InputAction.CallbackContext context)
-        {
-            Vector3? turnPosition = CheckTurn(context.ReadValue<float>());
-            if (!turnPosition.HasValue)
-            {
-                return;
-            }
-            Vector3 targetDirection = Quaternion.AngleAxis(90 * context.ReadValue<float>(), Vector3.up) * movementDirection;
-            turnEvent.Invoke(targetDirection);
-            Turn(context.ReadValue<float>(), turnPosition.Value);
-        }
+      // private void PlayerTurn(InputAction.CallbackContext context)
+      // {
+      //     Vector3? turnPosition = CheckTurn(context.ReadValue<float>());
+      //     if (!turnPosition.HasValue)
+      //     {
+      //         GameOver();
+      //         return;
+      //     }
+      //     Vector3 targetDirection = Quaternion.AngleAxis(90 * context.ReadValue<float>(), Vector3.up) * movementDirection;
+      //    turnEvent.Invoke(targetDirection);
+      //     Turn(context.ReadValue<float>(), turnPosition.Value);
+      // }
 
         private Vector3? CheckTurn(float turnValue)
         {
@@ -99,22 +122,43 @@ namespace TempleRun.Playyer {
             return null;
         }
 
-        private void Turn(float turnValue, Vector3 turnPosition)
-        {
-            Vector3 tempPlayerPosition = new Vector3(turnPosition.x, transform.position.y, turnPosition.z);
-            controller.enabled = false;
-            transform.position = tempPlayerPosition;    
-            controller.enabled = true;
-
-            Quaternion targetRotation = transform.rotation * Quaternion.Euler(0, 90 * turnValue, 0);
-            transform.rotation = targetRotation;
-            movementDirection = transform.forward.normalized;
-        }
+       // private void Turn(float turnValue, Vector3 turnPosition)
+       // {
+       //     Vector3 tempPlayerPosition = new Vector3(turnPosition.x, transform.position.y, turnPosition.z);
+       //     controller.enabled = false;
+       //     transform.position = tempPlayerPosition;    
+       //     controller.enabled = true;
+       //
+       //     Quaternion targetRotation = transform.rotation * Quaternion.Euler(0, 90 * turnValue, 0);
+       //     transform.rotation = targetRotation;
+       //     movementDirection = transform.forward.normalized;
+       // }
 
         private void PlayerSlide(InputAction.CallbackContext context)
         {
-
+            if(!sliding && IsGrounded())
+            {
+                StartCoroutine(Slide());
+            }
         }
+
+        private IEnumerator Slide()
+        {
+            sliding = true;
+            Vector3 originalControllerCenter = controller.center;
+            Vector3 newControllerCenter = originalControllerCenter;
+            controller.height /= 2;
+            newControllerCenter.y -= controller.height / 2;
+            controller.center = newControllerCenter;
+
+            animator.Play(slidingAnimationId);
+            yield return new WaitForSeconds(slideAnimationClip.length);
+
+            controller.height *= 2;
+            controller.center = originalControllerCenter;
+            sliding = false;
+        }
+
         private void PlayerJump(InputAction.CallbackContext context)
         {
             if (IsGrounded()) {
@@ -124,6 +168,15 @@ namespace TempleRun.Playyer {
         }
         private void Update()
         {
+            if (!IsGrounded(20f))
+            {
+                GameOver();
+                return;
+            }
+
+            score += scoreMultiplier * Time.deltaTime;
+            scoreUpdateEvent.Invoke((int)score);
+
             controller.Move(transform.forward * playerSpeed * Time.deltaTime);
 
             if (IsGrounded() && playerVelocity.y < 0)
@@ -153,6 +206,22 @@ namespace TempleRun.Playyer {
             }
             return false;
 
+        }
+
+        private void GameOver()
+        {
+            Debug.Log("Game Over");
+            gameOverEvent.Invoke((int)score);
+            gameObject.SetActive(false);
+        }
+
+        private void OnControllerColliderHit(ControllerColliderHit hit)
+        {
+            if (((1 << hit.collider.gameObject.layer) & obstackleLayer) !=0)
+            {
+                GameOver();
+
+            }
         }
     }
 }

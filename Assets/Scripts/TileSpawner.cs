@@ -30,7 +30,7 @@ namespace TempleRun
             currentTiles = new List<GameObject>();
             currentObstacles = new List<GameObject>();
             
-            Random.InitState(System.DateTime.Now.Millisecond);
+            Random.asdasdasdInitState(System.DateTime.Now.Millisecond);
 
             for (int i = 0; i < tileStartCount; ++i)
             {
@@ -39,8 +39,12 @@ namespace TempleRun
 
             SpawnTile(SelectRandomGameObjectFromList(turnTiles).GetComponent<Tile>());
 
+        
+        
+        
+        
         }
-
+        S
         //Spawns Tiles
         private void SpawnTile(Tile tile, bool spawnObstacle = false)
         {
@@ -105,14 +109,14 @@ namespace TempleRun
 
         private void SpawnObstacle()
         {
-        //    if (Random.value > 0.2f) return;
-        //
-        //    GameObject obstaclePrefab = SelectRandomGameObjectFromList(obstacles);
-        //
-        //    Quaternion newObjectRotation = obstaclePrefab.gameObject.transform.rotation * Quaternion.LookRotation(currentTileDirection, Vector3.up);
-        //
-        //    GameObject obstacle = Instantiate(obstaclePrefab, currentTileLocation, newObjectRotation);
-        //    currentObstacles.Add(obstacle);
+            if (Random.value > 0.2f) return;
+        
+            GameObject obstaclePrefab = SelectRandomGameObjectFromList(obstacles);
+        
+            Quaternion newObjectRotation = obstaclePrefab.gameObject.transform.rotation * Quaternion.LookRotation(currentTileDirection, Vector3.up);
+        
+            GameObject obstacle = Instantiate(obstaclePrefab, currentTileLocation, newObjectRotation);
+            currentObstacles.Add(obstacle);
         }
 
         private GameObject SelectRandomGameObjectFromList(List<GameObject> list)
